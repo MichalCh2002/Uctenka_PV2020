@@ -5,32 +5,85 @@ using System.Text;
 
 namespace Uctenka
 {
-    class Uctenka
+    class uctenka
     {
-        Dictionary<int, Zbozi> Polozky = new Dictionary<int, Zbozi>();
-        public Firma Firma { get; set; }
+        #region Vlastnosti
+
+        /// <summary>
+        /// Číslovaný seznam položek na účtence
+        /// </summary>
+        Dictionary<int, PolozkaSeznamu> Polozky = new Dictionary<int, PolozkaSeznamu>();
+
+        public firma Firma { get; set; }
+
+        /// <summary>
+        /// Datum a čas vystavení účtenky
+        /// </summary>
         public DateTime Cas { get; set; }
+
+        /// <summary>
+        /// Identifikační číslo účtenky
+        /// </summary>
         public int Id { get; set; }
 
+        #endregion
 
-        public void addPolozka(Zbozi z)
+        #region Metody
+
+        /// <summary>
+        /// Vloží novou položku na účtenku
+        /// </summary>
+        /// <param name="polozka">položka se zbožím</param>
+        public void addPolozka(PolozkaSeznamu polozka)
         {
-            int id = Polozky.Count;
-            Polozky.Add(id,z);
+            int id = Polozky.Count; // id polozky
+            Polozky.Add(id,polozka); //vložení polozky do dictionary
         }
 
+        #endregion
+
+        #region Konstruktory
+
+        public uctenka()
+        {
+        }
+
+        public uctenka(int id, DateTime cas, firma firma)
+        {
+            this.Id = id;
+            this.Cas = cas;
+            this.Firma = firma;
+        }   
+
+        #endregion
+
+        #region ToString
 
         public override string ToString()
         {
-            string hlavicka =  Firma.ToString() + "\n Uctenka č."+ Id +"\n"+ Cas;
+            if (Polozky.Count == 0) 
+                return "Uctenka bez položek";
+
+            string hlavicka =  "__________________________\n"+Firma.adresa + "\nUctenka č."+ Id +"\n"+ Cas+ "\n__________________________\n";
+            string legenda = "\n ID \tNAZEV \tKS\tDPH\tZA_KUS\tS_DPH\tBEZ_DPH\n";
             string zbozi = "";
 
-            foreach (KeyValuePair<int, Zbozi> kvp in Polozky)
+            double sDPH = 0;
+            double bezDPH = 0;
+
+            foreach (var polozka in Polozky)
             {
-                zbozi += "\t"+string.Format("Key = {0}, Value = {1}", kvp.Key, kvp.Value)+"\n";
+                zbozi += " "+polozka.Key + "\t" + polozka.Value.Zbozi.nazev + "\t " + polozka.Value.Ks +"x \t"+ (int)polozka.Value.Dan +"%\t "+ polozka.Value.Zbozi.cena +"\t "+ polozka.Value.CenaSDani +"\t "+ polozka.Value.CenaBezDane + "\n";
+                sDPH += polozka.Value.CenaSDani;
+                bezDPH += polozka.Value.CenaBezDane;
+                
             }
 
-            return hlavicka + zbozi;
+            string celkem = "\n \t\t\t     celkem: [" + sDPH + " Kč] ["+ bezDPH + " Kč] ";
+
+            return hlavicka + legenda + zbozi + celkem;
         }
+
+        #endregion
     }
 }
